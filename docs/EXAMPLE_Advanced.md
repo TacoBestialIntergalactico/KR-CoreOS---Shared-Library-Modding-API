@@ -109,7 +109,7 @@ parkingstall, good, medium, bad, sport, junkyard, trafficjams, trafficjamn
 Vehicles are processed later than items — on `OnInitWorld` (see the timeline below),
 because `VehicleZoneDistribution` isn't ready during `OnPostDistributionMerge`.
 
-## 6. Care Package protocol (add-on architecture)
+## 6. Care Package protocol (add-on architecture) - (This is for my mods, I decided to include it because it's in the code. You don't need to know this if the only thing you're going to use is item distribution)
 
 Lets an **add-on** mod push content into a **host** mod with no shared code and no
 hard load-order requirement between the two — CoreOS brokers it.
