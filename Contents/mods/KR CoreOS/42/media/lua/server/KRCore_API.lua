@@ -1,21 +1,21 @@
 -- ==========================================================================
--- KR CoreOS - API Central v1.1.0 B42.19.0 (Servidor)
+-- KR CoreOS - Core API v1.1.0 B42.19.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
--- Este archivo debe cargarse ANTES que cualquier otro archivo de KRCore
--- y antes que los archivos de distribución de los mods dependientes.
--- Al estar en server/ y empezar por 'A', se garantiza carga primero
--- dentro del mod (orden alfabético: API < Locations < Server).
+-- This file must load BEFORE any other KRCore file and before the distribution
+-- files of the dependent mods. Living in server/ and starting with 'A'
+-- guarantees it loads first within the mod (alphabetical order:
+-- API < Locations < Server).
 --
--- Los mods dependientes declaran en su mod.info:
+-- Dependent mods declare in their mod.info:
 --     require=KRCoreOS
--- lo que garantiza que KRCore carga antes que ellos.
+-- which guarantees KRCore loads before them.
 -- ==========================================================================
 
 KRCore = KRCore or {}
 
--- ==================== ESTADO INTERNO ====================
+-- ==================== INTERNAL STATE ====================
 
 KRCore._distQueue    = KRCore._distQueue    or {}  -- { item, groupsAndProbs }
 KRCore._modRegistry  = KRCore._modRegistry  or {}  -- { modID -> { version, onContentAdded } }
@@ -34,24 +34,24 @@ local function warn(msg)
     print(TAG .. "WARN: " .. tostring(msg))
 end
 
--- ==================== API DE DISTRIBUCIÓN ====================
+-- ==================== DISTRIBUTION API ====================
 
 --[[
     KRCore.dist.add(item, groups)
 
-    Registra un item para ser añadido a ProceduralDistributions al inicio del juego.
+    Registers an item to be added to ProceduralDistributions at game start.
 
-    Parámetros:
-      item   (string) -- Nombre completo del item: "Base.MiItem"
-      groups (table)  -- Mapa de nombre_de_grupo -> probabilidad (número)
-                         Grupos predefinidos: KRCore.LOC (KRCore_Locations.lua)
-                         Grupos combinados:   KRCore.COMBO (POWER, TACTICAL,
-                                              COLD_STORAGE, COOKING) — expanden
-                                              a la unión de varios grupos
-                         Grupos especiales:
+    Parameters:
+      item   (string) -- Full item name: "Base.MyItem"
+      groups (table)  -- Map of group_name -> probability (number)
+                         Predefined groups: KRCore.LOC (KRCore_Locations.lua)
+                         Combined groups:   KRCore.COMBO (POWER, TACTICAL,
+                                            COLD_STORAGE, COOKING) — expand to
+                                            the union of several groups
+                         Special groups:
                            custom = { {name="Container", prob=0.2}, ... }
 
-    Ejemplo:
+    Example:
         KRCore.dist.add("Base.FriOSC", {
             MILITARY    = 0.2,
             SURVIVAL    = 0.4,
@@ -66,31 +66,31 @@ KRCore.dist = KRCore.dist or {}
 
 function KRCore.dist.add(item, groups)
     if type(item) ~= "string" or item == "" then
-        warn("dist.add: item inválido: " .. tostring(item))
+        warn("dist.add: invalid item: " .. tostring(item))
         return
     end
     if type(groups) ~= "table" then
-        warn("dist.add: groups debe ser una tabla para item '" .. item .. "'")
+        warn("dist.add: groups must be a table for item '" .. item .. "'")
         return
     end
     table.insert(KRCore._distQueue, { item = item, groups = groups })
 end
 
--- ==================== API DE REGISTRO DE MODS (Care Package) ====================
+-- ==================== MOD REGISTRATION API (Care Package) ====================
 
 --[[
     KRCore.registerMod(modID, info)
 
-    Declara que un mod principal acepta contenido de Care Packages.
+    Declares that a host mod accepts Care Package content.
 
-    Parámetros:
-      modID (string) -- Identificador único del mod: "KRTacticalOS"
+    Parameters:
+      modID (string) -- Unique mod identifier: "KRTacticalOS"
       info  (table)  -- {
                            version        = "1.0",
                            onContentAdded = function(contentType, data) ... end
                         }
 
-    Ejemplo:
+    Example:
         KRCore.registerMod("KRTacticalOS", {
             version = "1.0",
             onContentAdded = function(contentType, data)
@@ -103,32 +103,32 @@ end
 
 function KRCore.registerMod(modID, info)
     if type(modID) ~= "string" or modID == "" then
-        warn("registerMod: modID inválido")
+        warn("registerMod: invalid modID")
         return
     end
     if KRCore._modRegistry[modID] then
-        warn("registerMod: '" .. modID .. "' ya estaba registrado, sobreescribiendo")
+        warn("registerMod: '" .. modID .. "' was already registered, overwriting")
     end
     KRCore._modRegistry[modID] = info
-    log("Mod registrado: '" .. modID .. "' v" .. tostring(info and info.version or "?"))
+    log("Mod registered: '" .. modID .. "' v" .. tostring(info and info.version or "?"))
 end
 
 --[[
     KRCore.addContent(targetModID, contentType, data)
 
-    Llamado por un Care Package para añadir contenido a un mod principal.
-    Si el mod principal aún no está registrado, el contenido se encola
-    y se entregará cuando el mod se registre o al inicio del juego.
+    Called by a Care Package to add content to a host mod.
+    If the host mod isn't registered yet, the content is queued and
+    delivered when the mod registers or at game start.
 
-    Parámetros:
-      targetModID  (string) -- ID del mod destino: "KRTacticalOS"
-      contentType  (string) -- Tipo de contenido: "weapon", "clothing", "food", etc.
-      data         (table)  -- Datos del contenido (estructura libre, definida por el mod destino)
+    Parameters:
+      targetModID  (string) -- Target mod ID: "KRTacticalOS"
+      contentType  (string) -- Content type: "weapon", "clothing", "food", etc.
+      data         (table)  -- Content data (free structure, defined by the target mod)
 --]]
 
 function KRCore.addContent(targetModID, contentType, data)
     if type(targetModID) ~= "string" or targetModID == "" then
-        warn("addContent: targetModID inválido")
+        warn("addContent: invalid targetModID")
         return
     end
     table.insert(KRCore._contentQueue, {
@@ -138,23 +138,23 @@ function KRCore.addContent(targetModID, contentType, data)
     })
 end
 
--- ==================== API DE DISTRIBUCIÓN DE VEHÍCULOS ====================
+-- ==================== VEHICLE DISTRIBUTION API ====================
 
 --[[
     KRCore.dist.addVehicle(vehicleID, zones)
 
-    Registra un vehículo en VehicleZoneDistribution para que spawne en el mundo.
-    Se procesa en Events.OnInitWorld (después de OnPostDistributionMerge), cuando
-    VehicleZoneDistribution ya está completamente inicializado por el engine.
+    Registers a vehicle in VehicleZoneDistribution so it spawns in the world.
+    Processed on Events.OnInitWorld (after OnPostDistributionMerge), when
+    VehicleZoneDistribution is fully initialized by the engine.
 
-    Parámetros:
-      vehicleID (string) -- ID completo del vehículo: "Base.FriOSStepVan"
-      zones     (table)  -- Mapa de nombre_de_zona -> spawnChance (entero)
-                            Zonas estándar de PZ B42:
+    Parameters:
+      vehicleID (string) -- Full vehicle ID: "Base.FriOSStepVan"
+      zones     (table)  -- Map of zone_name -> spawnChance (integer)
+                            Standard PZ B42 zones:
                               parkingstall, good, medium, bad,
                               sport, junkyard, trafficjams, trafficjamn
 
-    Ejemplo:
+    Example:
         KRCore.dist.addVehicle("Base.FriOSStepVan", {
             good        = 1,
             trafficjams = 1,
@@ -165,16 +165,16 @@ KRCore._vehicleQueue = KRCore._vehicleQueue or {}
 
 function KRCore.dist.addVehicle(vehicleID, zones)
     if type(vehicleID) ~= "string" or vehicleID == "" then
-        warn("dist.addVehicle: vehicleID inválido: " .. tostring(vehicleID))
+        warn("dist.addVehicle: invalid vehicleID: " .. tostring(vehicleID))
         return
     end
     if type(zones) ~= "table" then
-        warn("dist.addVehicle: zones debe ser una tabla para '" .. vehicleID .. "'")
+        warn("dist.addVehicle: zones must be a table for '" .. vehicleID .. "'")
         return
     end
     table.insert(KRCore._vehicleQueue, { vehicleID = vehicleID, zones = zones })
 end
 
--- ==================== FIN ====================
--- KRCore_Locations.lua cargará después (L > A) y poblará KRCore.LOC
--- KRCore_Server.lua cargará después (S > L) y procesará todo
+-- ==================== END ====================
+-- KRCore_Locations.lua loads next (L > A) and populates KRCore.LOC
+-- KRCore_Server.lua loads next (S > L) and processes everything

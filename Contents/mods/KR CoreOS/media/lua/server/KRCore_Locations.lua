@@ -1,21 +1,21 @@
 -- ==========================================================================
--- KR CoreOS - Grupos de Ubicaciones v1.1.0 B41.78.7 (Servidor)
+-- KR CoreOS - Location Groups v1.1.0 B41.78.7 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
--- Define los grupos de ubicaciones (containers de ProceduralDistributions)
--- que los mods KR usan para registrar sus items.
+-- Defines the location groups (ProceduralDistributions containers) that the
+-- KR mods use to register their items.
 --
--- Referencia de containers: ProceduralDistributions.lua (B41.78.7)
--- Las ubicaciones que no existen en la versión actual del juego se omiten
--- silenciosamente en KRCore_Server (processDistributions).
+-- Container reference: ProceduralDistributions.lua (B41.78.7)
+-- Locations that don't exist in the current game version are skipped silently
+-- in KRCore_Server (processDistributions).
 -- ==========================================================================
 
 KRCore.LOC = {
 
     -- =========================================================
     -- MILITARY
-    -- Almacenes militares, policiales y bomberos
+    -- Military, police and fire storage
     -- =========================================================
     MILITARY = {
         "ArmyStorageElectronics",
@@ -40,7 +40,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- SURVIVAL
-    -- Tiendas de camping y equipo de supervivencia
+    -- Camping stores and survival gear
     -- =========================================================
     SURVIVAL = {
         "SurvivalGear",
@@ -57,11 +57,11 @@ KRCore.LOC = {
 
     -- =========================================================
     -- ELECTRONIC
-    -- Tiendas de electrónica y contenedores tecnológicos
+    -- Electronics stores and tech containers
     -- =========================================================
     ELECTRONIC = {
-        "ElectronicsStoreAppliances",  -- B41: "ElectronicsStore..." (con 's'), B42: "ElectronicStore..."
-        "ElectronicStoreAppliances",   -- cobertura B42
+        "ElectronicsStoreAppliances",  -- B41: "ElectronicsStore..." (with 's'), B42: "ElectronicStore..."
+        "ElectronicStoreAppliances",   -- B42 coverage
         "ElectronicStoreHAMRadio",
         "ElectronicStoreMisc",
         "ElectronicStoreCases",
@@ -79,7 +79,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- MEDICAL
-    -- Almacenes médicos y hospitalarios
+    -- Medical and hospital storage
     -- =========================================================
     MEDICAL = {
         "MedicalStorageDrugs",
@@ -92,7 +92,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- INDUSTRIAL
-    -- Talleres, fábricas y almacenes industriales
+    -- Workshops, factories and industrial storage
     -- =========================================================
     INDUSTRIAL = {
         "FactoryLockers",
@@ -115,8 +115,8 @@ KRCore.LOC = {
 
     -- =========================================================
     -- MECHANIC
-    -- Talleres mecánicos y tiendas de repuestos de coche
-    -- (ideal para items relacionados con baterías de coche)
+    -- Auto shops and car-part stores
+    -- (ideal for car-battery-related items)
     -- =========================================================
     MECHANIC = {
         "CarSupplyBatteries",    -- B42
@@ -135,7 +135,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- CRATES
-    -- Cajas de almacenamiento genéricas
+    -- Generic storage crates
     -- =========================================================
     CRATES = {
         "CrateElectronics",
@@ -155,7 +155,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- SPECIAL
-    -- Ubicaciones especiales y raras
+    -- Special and rare locations
     -- =========================================================
     SPECIAL = {
         "SafehouseArmor",
@@ -173,7 +173,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- STORES
-    -- Tiendas generales y grandes superficies
+    -- General stores and big-box stores
     -- =========================================================
     STORES = {
         "GigamartHousewares",
@@ -189,7 +189,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- BREAKROOM
-    -- Salas de descanso y oficinas
+    -- Break rooms and offices
     -- =========================================================
     BREAKROOM = {
         "BreakRoomCounter",
@@ -199,7 +199,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- BAR
-    -- Bares, teatros y entretenimiento
+    -- Bars, theatres and entertainment
     -- =========================================================
     BAR = {
         "BarCounterMisc",
@@ -210,7 +210,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- FRIDGE
-    -- Neveras residenciales y comerciales (incluye variantes B41 y B42)
+    -- Residential and commercial refrigerators (includes B41 and B42 variants)
     -- =========================================================
     FRIDGE = {
         "FridgeGeneric",
@@ -265,7 +265,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- FREEZER
-    -- Congeladores residenciales y comerciales (incluye variantes B41 y B42)
+    -- Residential and commercial freezers (includes B41 and B42 variants)
     -- =========================================================
     FREEZER = {
         "FreezerGeneric",
@@ -279,7 +279,7 @@ KRCore.LOC = {
         "FreezerHunter",
         "FreezerFrozenFood",
         "FreezerIceCream",
-        -- Variantes B41 que no existen en B42 (se omiten silenciosamente en B42):
+        -- B41 variants that don't exist in B42 (skipped silently on B42):
         "FreezerBeer",
         "FreezerBottles",
         "FreezerBreakRoom",
@@ -298,7 +298,7 @@ KRCore.LOC = {
         "MotelFreezer",
         "NolansFreezer",
         "UniversityFreezer",
-        -- Variantes B42:
+        -- B42 variants:
         "CrateChestFreezer",
         "ArenaKitchenFreezer",
         "BakeryKitchenFreezer",
@@ -327,7 +327,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- STOVE
-    -- Estufas residenciales y comerciales
+    -- Residential and commercial stoves
     -- =========================================================
     STOVE = {
         "StoveGeneric",
@@ -345,7 +345,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- KITCHEN
-    -- Cocinas (utensilios, vajilla, almacenamiento básico)
+    -- Kitchens (utensils, dishes, basic storage)
     -- =========================================================
     KITCHEN = {
         "ArenaKitchenCutlery",
@@ -382,7 +382,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- KITCHEN_SAUCES
-    -- Cocinas (salsas, carnes, productos específicos)
+    -- Kitchens (sauces, meats, specific goods)
     -- =========================================================
     KITCHEN_SAUCES = {
         "ArenaKitchenSauce",
@@ -421,7 +421,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- CAFETERIA
-    -- Cafeterías y espacios de comedor
+    -- Cafeterias and dining spaces
     -- =========================================================
     CAFETERIA = {
         "CafeteriaDrinks",
@@ -430,7 +430,7 @@ KRCore.LOC = {
 
     -- =========================================================
     -- SAFEHOUSE_FOOD
-    -- Refugios (comida y suministros)
+    -- Shelters (food and supplies)
     -- =========================================================
     SAFEHOUSE_FOOD = {
         "SafehouseFood",
@@ -442,25 +442,25 @@ KRCore.LOC = {
 }
 
 -- ==========================================================================
--- GRUPOS COMBINADOS
--- Un combo expande a la unión de varios grupos de KRCore.LOC (dedupe
--- automático en KRCore_Server). Se usan con el mismo nombre en dist.add():
---     KRCore.dist.add("Base.MiItem", { POWER = 0.2 })
+-- COMBINED GROUPS
+-- A combo expands to the union of several KRCore.LOC groups (automatic dedupe
+-- in KRCore_Server). Used with the same name in dist.add():
+--     KRCore.dist.add("Base.MyItem", { POWER = 0.2 })
 -- ==========================================================================
 
 KRCore.COMBO = {
 
-    -- Electrónica + talleres mecánicos: todo lo relacionado con energía,
-    -- baterías y aparatos (ideal para KR SolarOS)
+    -- Electronics + mechanic shops: everything power-, battery- and
+    -- appliance-related (ideal for KR SolarOS)
     POWER = { "ELECTRONIC", "MECHANIC" },
 
-    -- Militar + supervivencia: equipamiento de campo (ideal para KR TacticalOS)
+    -- Military + survival: field gear (ideal for KR TacticalOS)
     TACTICAL = { "MILITARY", "SURVIVAL" },
 
-    -- Neveras + congeladores: todo almacenamiento en frío (ideal para KR FoodOS)
+    -- Fridges + freezers: all cold storage (ideal for KR FoodOS)
     COLD_STORAGE = { "FRIDGE", "FREEZER" },
 
-    -- Cocinas + estufas: todo el entorno de cocina
+    -- Kitchens + stoves: the whole cooking environment
     COOKING = { "KITCHEN", "STOVE" },
 
 }
