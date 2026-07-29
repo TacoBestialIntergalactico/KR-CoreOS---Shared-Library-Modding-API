@@ -1,5 +1,5 @@
 -- ==========================================================================
--- KR CoreOS - Server v1.1.0 B42.19.0 (Server)
+-- KR CoreOS - Server v1.2.0 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
@@ -176,7 +176,7 @@ end
 --   OnInitWorld is the first safe moment to modify it.
 
 local function onPostDistributionMerge()
-    print(TAG .. "Starting KR CoreOS v1.1.0...")
+    print(TAG .. "Starting KR CoreOS v1.2.0...")
     processContentQueue()
     processDistributions()
     KRCore._initialized = true

@@ -195,14 +195,22 @@ on the build.
 
 ## Location groups at a glance
 
-18 context groups + 4 combos. Full container-by-container breakdown in **[GROUPS.md](GROUPS.md)**.
+**40 thematic groups + `OTHER` + 4 combos**, covering **all 1418 B42.20 loot containers**.
+Full container-by-container breakdown in **[GROUPS.md](GROUPS.md)**.
 
-`MILITARY` · `SURVIVAL` · `ELECTRONIC` · `MEDICAL` · `INDUSTRIAL` · `MECHANIC` ·
-`CRATES` · `SPECIAL` · `STORES` · `BREAKROOM` · `BAR` · `FRIDGE` · `FREEZER` ·
-`STOVE` · `KITCHEN` · `KITCHEN_SAUCES` · `CAFETERIA` · `SAFEHOUSE_FOOD`
+Core (curated): `MILITARY` · `SURVIVAL` · `ELECTRONIC` · `MEDICAL` · `INDUSTRIAL` ·
+`MECHANIC` · `CRATES` · `SPECIAL` · `STORES` · `BREAKROOM` · `BAR` · `FRIDGE` ·
+`FREEZER` · `STOVE` · `KITCHEN` · `KITCHEN_SAUCES` · `CAFETERIA` · `SAFEHOUSE_FOOD`
+
+Full-coverage (B42.20): `CLOTHING` · `FIREARMS` · `WEAPONS` · `AMMO` · `BOOKS` ·
+`MEDIA` · `OFFICE` · `SPORTS` · `TOYS` · `HOBBY` · `JEWELRY` · `FARMING` · `PET` ·
+`MATERIALS` · `HYGIENE` · `TRASH` · `LIQUOR` · `FURNITURE` · `SCHOOL` · `SCIENCE` ·
+`RELIGION` · `GROCERY` · `OTHER`
 
 **Combos:** `POWER` (ELECTRONIC+MECHANIC) · `TACTICAL` (MILITARY+SURVIVAL) ·
-`COLD_STORAGE` (FRIDGE+FREEZER) · `COOKING` (KITCHEN+STOVE)
+`COLD_STORAGE` (FRIDGE+FREEZER) · `COOKING` (KITCHEN+STOVE) ·
+`WARZONE` (MILITARY+FIREARMS+WEAPONS+AMMO) · `FOOD` (GROCERY+FRIDGE+FREEZER) ·
+`WORKSHOP` (INDUSTRIAL+MECHANIC+MATERIALS)
 
 ---
 

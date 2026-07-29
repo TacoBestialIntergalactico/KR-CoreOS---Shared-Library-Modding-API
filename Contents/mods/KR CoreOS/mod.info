@@ -3,5 +3,5 @@ id=KRCoreOS
 description=Core API for KR mods. Handles loot distribution, device registration, and the Care Package protocol. Required by KR FriOS and the KR SolarOS ecosystem (SolarOS, Fuel, Lights).
 poster=poster.png
 author=D4RK-C0MP4N1
-modversion=1.1
+modversion=1.2
 versionMin=41.78

@@ -1,5 +1,5 @@
 -- ==========================================================================
--- KR CoreOS - Core API v1.1.0 B42.19.0 (Server)
+-- KR CoreOS - Core API v1.2.0 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
