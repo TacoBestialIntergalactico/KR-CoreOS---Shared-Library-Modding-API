@@ -95,8 +95,8 @@ require=KRCoreOS
 runs on the host/dedicated server, not the client):
 
 ```
-Build 42:  42/media/lua/server/YourMod_Distribution.lua
-Build 41:     media/lua/server/YourMod_Distribution.lua
+Build 42:  42/media/lua/server/YourMod/distribution.lua
+Build 41:     media/lua/server/YourMod/distribution.lua
 ```
 
 **3. Register your items** (always guard against CoreOS being absent):
