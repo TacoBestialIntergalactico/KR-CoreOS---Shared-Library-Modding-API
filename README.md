@@ -226,7 +226,7 @@ Full-coverage (B42.20): `CLOTHING` · `FIREARMS` · `WEAPONS` · `AMMO` · `BOOK
 
 ## Compatibility
 
-- Build 42 (42.19.0) ✔ · Build 41 ✔
+- Build 42 (42.20.0) ✔ · Build 41 ✔
 - Singleplayer ✔ · Multiplayer ✔
 - No known mod conflicts (additive, never overwrites existing entries)
 
