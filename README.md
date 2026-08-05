@@ -65,13 +65,13 @@ energy item that belongs in electronics stores **and** mechanic shops — become
 
 ```lua
 KRCore.dist.add("Base.MyItem", {
-    POWER = 0.20,   -- POWER = ELECTRONIC + MECHANIC: 26 containers, one line.
+    POWER = 0.20,   -- POWER = ELECTRONIC_POWER + CRATES_ELECTRONIC + MECHANIC: 23 containers, one line.
 })
 ```
 
 | | Vanilla | KR CoreOS |
 |---|---|---|
-| Add to 26 containers | 52 `table.insert` lines | 1 line |
+| Add to 23 containers | 46 `table.insert` lines | 1 line |
 | Targeting | exact container names | contextual groups (`MEDICAL`, `POWER`, …) |
 | Value meaning | raw weight vs. `rolls` | `prob` ≈ a percentage (`0.30` ≈ 30%) |
 | Two mods, same table | can conflict / overwrite | queued + merged, **deduped**, no conflicts |
@@ -135,8 +135,8 @@ That's the whole flow. No loot tables written by hand.
 Register an item into the world loot tables.
 - `item` *(string)* — full type name, e.g. `"Base.MyItem"`.
 - `groups` *(table)* — map of `GROUP = prob`. Keys can be:
-  - a **location group** from `KRCore.LOC` (e.g. `MEDICAL`, `ELECTRONIC`) — see [GROUPS.md](GROUPS.md);
-  - a **combo** from `KRCore.COMBO` (`POWER`, `TACTICAL`, `COLD_STORAGE`, `COOKING`) — expands to the union of several groups;
+  - a **thematic group** from `KRCore.LOC` (e.g. `MEDICAL_HOSPITAL`, `ELECTRONIC_POWER`, `GROCERY_MEAT`) — see [GROUPS.md](GROUPS.md);
+  - a **combo** from `KRCore.COMBO` — either a coarse roll-up (`MEDICAL`, `ELECTRONIC`, `BOOKS`, `GROCERY`, …) or a concept (`POWER`, `WAREHOUSE`, `FOOD`, `WARZONE`, …); a combo expands to the union of several groups and may reference other combos;
   - the special key `custom = { {name="Container", prob=0.2}, ... }` to target raw containers.
 
 `prob` is inserted as the item's spawn weight; in practice `~0.30` behaves like roughly
@@ -173,7 +173,8 @@ For "add-on" mods that inject content into a host mod without touching its files
 2. On **`OnPostDistributionMerge`** (which in B42 fires *before* `ItemPickerJava.Parse()`,
    so inserts are guaranteed visible), CoreOS drains the queue:
    - each group name is resolved to its container list (`KRCore.LOC`), or, for a combo,
-     to the **deduplicated union** of its sub-groups (`KRCore.COMBO`);
+     to the **deduplicated union** of its sub-groups (`KRCore.COMBO`) — combos may
+     reference other combos, resolved **recursively** with a cycle guard;
    - `custom` entries go first (override), then groups;
    - a per-item `usedContainers` set **dedupes** so an item is never inserted twice into
      the same container (e.g. `GarageMechanics` lives in both `INDUSTRIAL` and `MECHANIC`);
@@ -191,26 +192,36 @@ build-appropriate group definition in each build folder, and any container name 
 doesn't exist in the player's version is skipped silently — so your code never branches
 on the build.
 
+> **Tip:** the fine `*_POWER`-style thematic groups are **B42-only**. For code that also
+> runs on B41, target the **coarse roll-up / combo names** (`ELECTRONIC`, `POWER`,
+> `MEDICAL`, `FOOD`, …) — they resolve to real groups on B41 and to combos on B42, so the
+> same call covers both builds.
+
 ---
 
 ## Location groups at a glance
 
-**40 thematic groups + `OTHER` + 4 combos**, covering **all 1418 B42.20 loot containers**.
-Full container-by-container breakdown in **[GROUPS.md](GROUPS.md)**.
+**140 thematic groups + 30 combos**, covering **all 1418 B42.20 loot containers** — every
+container belongs to exactly **one** group (no overlap); combos add breadth on top. Full
+container-by-container breakdown in **[GROUPS.md](GROUPS.md)**.
 
-Core (curated): `MILITARY` · `SURVIVAL` · `ELECTRONIC` · `MEDICAL` · `INDUSTRIAL` ·
-`MECHANIC` · `CRATES` · `SPECIAL` · `STORES` · `BREAKROOM` · `BAR` · `FRIDGE` ·
-`FREEZER` · `STOVE` · `KITCHEN` · `KITCHEN_SAUCES` · `CAFETERIA` · `SAFEHOUSE_FOOD`
+Thematic groups are fine and curated into families, for example:
 
-Full-coverage (B42.20): `CLOTHING` · `FIREARMS` · `WEAPONS` · `AMMO` · `BOOKS` ·
-`MEDIA` · `OFFICE` · `SPORTS` · `TOYS` · `HOBBY` · `JEWELRY` · `FARMING` · `PET` ·
-`MATERIALS` · `HYGIENE` · `TRASH` · `LIQUOR` · `FURNITURE` · `SCHOOL` · `SCIENCE` ·
-`RELIGION` · `GROCERY` · `OTHER`
+- **Power / tech:** `ELECTRONIC_GENERAL` · `_COMPUTER` · `_PHONE` · `_RADIO` · `_POWER` · `MECHANIC` · `MECHANIC_CARPARTS` · `MECHANIC_FUEL`
+- **Warehouse crates** (their own axis): `CRATES_CANFOOD` · `_FOOD` · `_DRINKS` · `_LIQUOR` · `_KITCHEN` · `_APPLIANCES` · `_ELECTRONIC` · `_TOOLS` · `_METAL` · `_MATERIALS` · `_FURNITURE` · `_CLOTHING` · `_FARMING` · `_MEDIA` · `_BOOKS` · `_SPORTS` · `_MISC` · `_TRASH`
+- **Food:** `GROCERY_*` (PRODUCE/MEAT/BAKERY/…) · `FRIDGE_*` · `FREEZER_*` · `KITCHEN_*` · `CAFETERIA` · `RESTAURANT` · `SAFEHOUSE_FOOD`
+- **Books & media:** `BOOKS_*` (FICTION/SCIFI/NONFICTION/…/ELECTRONIC/MECHANIC/MEDICAL) · `MEDIA_MUSIC` · `_FILM` · `_STAGE`
+- **Combat:** `GUNFIRE_*` (STORE/MILITARY/POLICE/SWAT/PRISON/RANGER/CRIMINAL/GENERIC) · `WEAPONS` · `AMMO`
+- **Places & people:** `ARMY` · `POLICE` · `PRISON` · `SECURITY` · `FIREFIGHTER` · `MEDICAL_*` · `INDUSTRIAL_*` · `CLOTHING_*` · `OFFICE_*` · `HYGIENE_*` · `SPORTS_*` · `FURNITURE_*` · `SAFEHOUSE_GEAR` · `LOCKERS` · `STASH` · `SPA` · `SPIFFO` (brand) · … and more.
 
-**Combos:** `POWER` (ELECTRONIC+MECHANIC) · `TACTICAL` (MILITARY+SURVIVAL) ·
-`COLD_STORAGE` (FRIDGE+FREEZER) · `COOKING` (KITCHEN+STOVE) ·
-`WARZONE` (MILITARY+FIREARMS+WEAPONS+AMMO) · `FOOD` (GROCERY+FRIDGE+FREEZER) ·
-`WORKSHOP` (INDUSTRIAL+MECHANIC+MATERIALS)
+**Combos** come in two layers:
+
+- **Roll-ups** rebuild each old coarse name as the union of its fine groups, so code
+  written for older CoreOS keeps working unchanged: `ELECTRONIC`, `MEDICAL`, `INDUSTRIAL`,
+  `AUTOMOTIVE`, `SURVIVAL`, `BOOKS`, `CLOTHING`, `GROCERY`, `GUNFIRE`/`FIREARMS`, `OFFICE`,
+  `HYGIENE`, `KITCHEN`, `SPORTS`, `MEDIA`, `FURNITURE`, `FRIDGE`, `FREEZER`, `CRATES`, `SPECIAL`.
+- **Concepts:** `WAREHOUSE` · `POWER` · `COLD_STORAGE` · `COOKING` · `FOOD` · `MILITARY` ·
+  `TACTICAL` · `WARZONE` · `LAW` · `WORKSHOP`.
 
 ---
 
@@ -226,7 +237,7 @@ Full-coverage (B42.20): `CLOTHING` · `FIREARMS` · `WEAPONS` · `AMMO` · `BOOK
 
 ## Compatibility
 
-- Build 42 (42.19.0) ✔ · Build 41 ✔
+- Build 42 (42.20.0) ✔ · Build 41 ✔
 - Singleplayer ✔ · Multiplayer ✔
 - No known mod conflicts (additive, never overwrites existing entries)
 

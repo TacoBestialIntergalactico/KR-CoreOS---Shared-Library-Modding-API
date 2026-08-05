@@ -1,27 +1,34 @@
 -- ==========================================================================
--- KR CoreOS - Server v1.2.0 B42.20.0 (Server)
+-- KR CoreOS - Server v1.2.1 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
 -- Processes all registrations on OnPostDistributionMerge, once every mod has
 -- loaded and filled the queue via KRCore.dist.add().
+--
 -- ==========================================================================
 
 local TAG = "[KRCore] "
 
 -- ==================== DISTRIBUTION PROCESSING ====================
 
--- Resolves a group's locations: first KRCore.LOC, then KRCore.COMBO
--- (combined groups: a list of group names that expand to the union of their
--- locations, deduplicating containers repeated across subgroups).
-local function resolveGroupLocations(groupName)
+-- Resolves a group's locations to a flat, deduplicated container list.
+-- A name is looked up first in KRCore.LOC (atomic groups), then in
+-- KRCore.COMBO (combined groups: a list of subgroup names). Combos resolve
+-- RECURSIVELY, so a combo may reference atomic groups AND other combos; the
+-- 'seenGroups' set guards against reference cycles. Containers repeated across
+-- subgroups are deduplicated.
+local function resolveGroupLocations(groupName, seenGroups)
     local locations = KRCore.LOC[groupName]
     if locations then return locations end
     local combo = KRCore.COMBO and KRCore.COMBO[groupName]
     if not combo then return nil end
+    seenGroups = seenGroups or {}
+    if seenGroups[groupName] then return {} end   -- cycle guard
+    seenGroups[groupName] = true
     local merged, seen = {}, {}
     for _, subName in ipairs(combo) do
-        local subLocs = KRCore.LOC[subName]
+        local subLocs = resolveGroupLocations(subName, seenGroups)
         if subLocs then
             for _, locName in ipairs(subLocs) do
                 if not seen[locName] then

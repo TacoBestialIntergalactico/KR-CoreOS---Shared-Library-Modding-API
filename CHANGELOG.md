@@ -3,6 +3,45 @@
 All notable changes to **KR CoreOS** are documented here.
 This project targets Project Zomboid **Build 41** and **Build 42**.
 
+## [1.2.1] — Fine-grained taxonomy & combo overhaul
+
+### Added
+- **140 location groups.** The coarse groups from 1.2.0 were split into fine,
+  curated, **non-overlapping** groups so items land where they thematically belong.
+  Each of the **1418** B42.20 containers now belongs to exactly one group. New families:
+  - `ELECTRONIC_*` · `MECHANIC_*` · `MEDICAL_*` · `INDUSTRIAL_*`
+  - `BOOKS_*` (FICTION / SCIFI / NONFICTION / HOBBIES / COMICS / NEWS / CHILDS / GENERAL / ELECTRONIC / MECHANIC / MEDICAL)
+  - `GROCERY_*` (PRODUCE / MEAT / BAKERY / SNACKS / PANTRY / BBQ / DRINKS / PREPARED / TOBACCO)
+  - `CLOTHING_*` · `OFFICE_*` · `HYGIENE_*` · `KITCHEN_*` · `SPORTS_*` · `MEDIA_*` · `FURNITURE_*` · `FRIDGE_*` · `FREEZER_*`
+  - `GUNFIRE_*` — firearms by source (store / military / police / SWAT / prison / ranger / criminal / generic)
+  - New standalone groups: `SAFEHOUSE_GEAR`, `LOCKERS`, `STASH`, `RESTAURANT`, `SPA`
+- **`CRATES_*` — a warehouse family (18 groups).** Every storage crate in the game, split
+  by content (CANFOOD, FOOD, DRINKS, LIQUOR, KITCHEN, APPLIANCES, ELECTRONIC, TOOLS, METAL,
+  MATERIALS, FURNITURE, CLOTHING, FARMING, MEDIA, BOOKS, SPORTS, MISC, TRASH). Crates are a
+  distinct high-yield loot context, so they form their own axis.
+- **`SPIFFO`** — a brand group gathering every Spiffo's loot table in one place,
+  independent of physical context.
+- **Recursive combo resolver** — a combo may now reference other combos (cycle-guarded),
+  enabling layered groupings.
+- **30 combined groups (`KRCore.COMBO`)** in two layers:
+  - **Roll-ups** rebuild each old coarse name as the union of its fine groups, so existing
+    registrations keep working: `ELECTRONIC`, `MEDICAL`, `INDUSTRIAL`, `BOOKS`, `CLOTHING`,
+    `GROCERY`, `GUNFIRE`/`FIREARMS`, `OFFICE`, `HYGIENE`, `KITCHEN`, `SPORTS`, `MEDIA`,
+    `FURNITURE`, `FRIDGE`, `FREEZER`, `SURVIVAL`, `SPECIAL`, `CRATES`, `AUTOMOTIVE`.
+  - **Concepts**: `WAREHOUSE`, `POWER`, `COLD_STORAGE`, `COOKING`, `FOOD`, `MILITARY`,
+    `TACTICAL`, `WARZONE`, `LAW`, `WORKSHOP`.
+
+### Changed
+- Groups are now **single-membership** — no container lives in two groups; combos
+  add breadth on top with automatic dedupe.
+- Source comments rewritten in English.
+
+> **Backward compatibility:** the old coarse group names still resolve — they are now
+> combos that expand to the matching fine groups — so mods written against 1.2.0 need no
+> changes.
+
+> **B41:** unchanged.
+
 ## [1.2.0] — B42.20 support & full container coverage
 
 ### Added
@@ -24,12 +63,6 @@ This project targets Project Zomboid **Build 41** and **Build 42**.
   theme (the new prison, logging compound, factories, etc.). **Existing members are
   preserved.**
 - Container names re-verified against **B42.20**.
-
-> **Balance note:** groups the KR mods register into are now larger — most importantly
-> `POWER` (`ELECTRONIC` + `MECHANIC`) grew from ~26 to ~80 containers, and `MILITARY`,
-> `SURVIVAL` and `KITCHEN` also grew. Items registered to them will spawn in more
-> places once this CoreOS version is live. Retune your mods' probabilities if you want
-> to keep the previous rarity.
 
 > **B41:** this expansion is B42-only. The B41 group set is unchanged; the new groups
 > are not defined on B41 (targeting them there logs a harmless "unknown group" warning).
