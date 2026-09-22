@@ -64,7 +64,7 @@ local DEV_MODE = false
 local DEV      = 10.0
 local P = {
     GPS = { H = 0.20, M = 0.10, L = 0.05 },
-    VAN = { good = 1, trafficjams = 1 },
+    VAN = { RESIDENTIAL = 1, TRAFFIC = 1 },
 }
 if DEV_MODE then
     P.GPS.H, P.GPS.M, P.GPS.L = DEV, DEV, DEV
@@ -89,25 +89,33 @@ KRCore.dist.add("Base.MilitaryGPS", {
 })
 
 -- ---- vehicles ----
-KRCore.dist.addVehicle("Base.SupplyVan", {
-    good        = P.VAN.good,
-    trafficjams = P.VAN.trafficjams,
-})
+KRCore.dist.addVehicle("Base.SupplyVan", P.VAN)   -- RESIDENTIAL + TRAFFIC groups
 
 print(TAG .. "Registration queued.")
 ```
 
 ## 5. Vehicles
 
-`addVehicle(id, zones)` writes into `VehicleZoneDistribution`. `zones` maps a zone
-name to an integer `spawnChance`. Standard B42 zones:
+`addVehicle(id, zones)` writes into `VehicleZoneDistribution`, mirroring `dist.add`:
+each name resolves as a **zone group** (`KRCore.VZONE`) → **combo** (`KRCore.VCOMBO`) →
+**raw PZ zone** (backward compat), with a `custom` override list and per-vehicle dedupe.
+The value is a `spawnChance` (weight inside the zone; use `1-3` for a rare modded vehicle).
 
-```
-parkingstall, good, medium, bad, sport, junkyard, trafficjams, trafficjamn
+```lua
+KRCore.dist.addVehicle("Base.SupplyVan", {
+    RESIDENTIAL = 1,     -- group: parkingstall/good/medium/bad
+    TRAFFIC     = 1,     -- group: all 4 jam directions (one write; they share a table)
+    custom = { { name = "junkyard", chance = 3 } },   -- raw zone + optional index
+})
 ```
 
-Vehicles are processed later than items — on `OnInitWorld` (see the timeline below),
-because `VehicleZoneDistribution` isn't ready during `OnPostDistributionMerge`.
+Dedupe is by the zone's **vehicle table**, so aliased zones (`trafficjamn/s/e/w`;
+`business2..12`) are written once. Vehicles are processed later than items — on
+`OnInitWorld` (see the timeline below), because `VehicleZoneDistribution` isn't ready
+during `OnPostDistributionMerge`.
+
+> Full how-to in **[EXAMPLE_Vehicles.md](EXAMPLE_Vehicles.md)**; every group → zones in
+> **[GROUPS_VEHICLES.md](../GROUPS_VEHICLES.md)**.
 
 ## 6. Care Package protocol (add-on architecture) - (This is for my mods, I decided to include it because it's in the code. You don't need to know this if the only thing you're going to use is item distribution)
 
@@ -159,7 +167,8 @@ shape.
 
 `require=KRCoreOS` loads CoreOS before dependent mods. Inside CoreOS, the `server/`
 folder plus alphabetical file names load `KRCore_API` → `KRCore_Locations` →
-`KRCore_Server`, so the API and the group tables exist before the processor runs.
+`KRCore_LocationsVehicles` → `KRCore_Server`, so the API and the group tables (item
+`KRCore.LOC`/`COMBO` and vehicle `KRCore.VZONE`/`VCOMBO`) exist before the processor runs.
 
 ## Weight semantics
 

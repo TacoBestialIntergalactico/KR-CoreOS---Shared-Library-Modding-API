@@ -1,5 +1,5 @@
 -- ==========================================================================
--- KR CoreOS - Server v1.2.1 B42.20.0 (Server)
+-- KR CoreOS - Server v1.2.3 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
@@ -141,6 +141,43 @@ end
 -- VehicleZoneDistribution is processed on OnInitWorld, which fires after
 -- OnPostDistributionMerge. At that point the zone map is fully initialized by
 -- the engine and it's safe to insert vehicle entries.
+--
+-- Mirrors the item pipeline: names resolve through semantic groups (KRCore.VZONE),
+-- combined groups (KRCore.VCOMBO, recursive), and a raw VehicleZoneDistribution
+-- zone name as a fallback (backward compat). Supports a 'custom' override list and
+-- dedupes per vehicle so aliased zones aren't written twice.
+
+-- Resolves a vehicle-zone name to a flat, deduplicated list of RAW zone names.
+-- Order: VZONE (atomic) -> VCOMBO (combined, recursive) -> raw zone (compat).
+-- 'seen' guards against reference cycles in VCOMBO.
+local function resolveVehicleZones(name, seen)
+    local atomic = KRCore.VZONE and KRCore.VZONE[name]
+    if atomic then return atomic end
+    local combo = KRCore.VCOMBO and KRCore.VCOMBO[name]
+    if combo then
+        seen = seen or {}
+        if seen[name] then return {} end   -- cycle guard
+        seen[name] = true
+        local merged, seenZone = {}, {}
+        for _, subName in ipairs(combo) do
+            local subZones = resolveVehicleZones(subName, seen)
+            if subZones then
+                for _, z in ipairs(subZones) do
+                    if not seenZone[z] then
+                        seenZone[z] = true
+                        table.insert(merged, z)
+                    end
+                end
+            else
+                print(TAG .. "WARN: VCOMBO '" .. name .. "' references non-existent group/zone '" .. tostring(subName) .. "'")
+            end
+        end
+        return merged
+    end
+    -- Backward compat: a raw VehicleZoneDistribution zone name works as its own group.
+    if VehicleZoneDistribution[name] then return { name } end
+    return nil
+end
 
 local function processVehicleDistributions()
     if not VehicleZoneDistribution then
@@ -154,20 +191,57 @@ local function processVehicleDistributions()
     for _, entry in ipairs(KRCore._vehicleQueue) do
         local vid   = entry.vehicleID
         local zones = entry.zones
-        for zoneName, spawnChance in pairs(zones) do
+        -- Dedupe per vehicle by the VEHICLES TABLE (not the zone name): several PZ
+        -- zones alias one table (trafficjamn/s/e/w share it; business2..12 too), so
+        -- this writes the vehicle once and keeps the first spawnChance (custom wins).
+        local usedTables = {}
+
+        local function insertVehicle(zoneName, spawnChance, index, warnIfMissing)
             local zone = VehicleZoneDistribution[zoneName]
             if zone and zone.vehicles then
-                zone.vehicles[vid] = { index = -1, spawnChance = spawnChance }
+                if usedTables[zone.vehicles] then
+                    skipped = skipped + 1
+                    return
+                end
+                usedTables[zone.vehicles] = true
+                zone.vehicles[vid] = { index = index or -1, spawnChance = spawnChance }
                 added = added + 1
             else
-                print(TAG .. "WARN: unknown vehicle zone '" .. zoneName .. "' (vehicle: " .. vid .. ")")
+                -- Silent for group members (a build may lack a zone); loud for explicit
+                -- 'custom' entries and unknown top-level names.
+                if warnIfMissing then
+                    print(TAG .. "WARN: unknown vehicle zone '" .. tostring(zoneName) .. "' (vehicle: " .. vid .. ")")
+                end
                 skipped = skipped + 1
+            end
+        end
+
+        -- 'custom' first: explicit raw-zone overrides. With the table dedupe, the
+        -- first write into a shared table wins, so custom can set a distinct chance.
+        --   custom = { { name = "junkyard", chance = 5, index = -1 }, ... }
+        if type(zones.custom) == "table" then
+            for _, c in ipairs(zones.custom) do
+                insertVehicle(c.name, c.chance or c.spawnChance or 1, c.index, true)
+            end
+        end
+
+        for name, spawnChance in pairs(zones) do
+            if name ~= "custom" then
+                local resolved = resolveVehicleZones(name)
+                if not resolved then
+                    print(TAG .. "WARN: unknown vehicle zone/group '" .. tostring(name) .. "' (vehicle: " .. vid .. ")")
+                    skipped = skipped + 1
+                else
+                    for _, zoneName in ipairs(resolved) do
+                        insertVehicle(zoneName, spawnChance, nil, false)
+                    end
+                end
             end
         end
     end
 
     if added > 0 or skipped > 0 then
-        print(TAG .. "Vehicles: " .. added .. " zones registered, " .. skipped .. " skipped.")
+        print(TAG .. "Vehicles: " .. added .. " entries added, " .. skipped .. " skipped (dupes/missing).")
     end
     KRCore._vehicleQueue = {}
 end
@@ -183,7 +257,7 @@ end
 --   OnInitWorld is the first safe moment to modify it.
 
 local function onPostDistributionMerge()
-    print(TAG .. "Starting KR CoreOS v1.2.0...")
+    print(TAG .. "Starting KR CoreOS v1.2.3...")
     processContentQueue()
     processDistributions()
     KRCore._initialized = true

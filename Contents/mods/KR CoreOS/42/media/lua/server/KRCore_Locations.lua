@@ -1,5 +1,5 @@
 -- ==========================================================================
--- KR CoreOS - Location Groups v1.2.1 B42.20.0 (Server)
+-- KR CoreOS - Location Groups v1.2.3 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --

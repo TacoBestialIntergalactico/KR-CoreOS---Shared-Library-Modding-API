@@ -22,6 +22,13 @@ Usage
 
 Notes
 -----
+* ITEM-only tool. Vehicle zone groups (KRCore.VZONE / VCOMBO) are small and hand-curated
+  in KRCore_LocationsVehicles.lua -- there is no generator for them.
+* STALE since v1.2.1: the 140 groups are hand-curated and GROUPS.md has hand-written
+  descriptions this script's DESC table doesn't know, and its RULES still classify into the
+  OLD ~38 coarse names (now combos). The dry run is accurate, but `--write` is GUARDED: it
+  refuses unless you also pass `--force` (updating RULES/DESC to the fine taxonomy first is
+  the intended fix). Left as-is on purpose for the vehicle-focused 1.2.3 release.
 * Only the B42 group file is updated (`42/media/lua/server/KRCore_Locations.lua`).
 * Classification is by ordered name-pattern rules (first match wins). Edit the
   RULES table below to re-route a container; anything unmatched lands in OTHER.
@@ -40,6 +47,7 @@ DEFAULT_PD = r"C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid\medi
 
 args    = sys.argv[1:]
 WRITE   = "--write" in args
+FORCE   = "--force" in args
 pd_args = [a for a in args if not a.startswith("--")]
 PD      = pd_args[0] if pd_args else DEFAULT_PD
 
@@ -190,6 +198,27 @@ if uncat:
 if not WRITE:
     print("\n(dry run - pass --write to update KRCore_Locations.lua and GROUPS.md)")
     sys.exit(0)
+
+# --- SAFETY GUARD (added v1.2.3) ---------------------------------------------
+# Since v1.2.1 the 140 groups are HAND-CURATED and GROUPS.md carries hand-written
+# descriptions this tool's DESC table does NOT know. Re-running --write would:
+#   * regenerate GROUPS.md from stale descriptions -> LOSE the curated text, and
+#   * route any NEW build container into the OLD coarse group names (CLOTHING,
+#     MEDICAL, ...) which are now COMBOS, not LOC groups -> broken grouping.
+# So writing is refused unless you pass --force. Before forcing, update the RULES
+# and DESC tables to the fine 1.2.1 taxonomy (or repurpose this into a validator).
+# NOTE: this tool is ITEM-only; vehicle zone groups (KRCore.VZONE/VCOMBO) are
+# small and hand-curated in KRCore_LocationsVehicles.lua -- no generator needed.
+missing_desc = [g for g in order if g not in DESC]
+if not FORCE:
+    print("\n[!] REFUSING to write. This generator is STALE vs the v1.2.1 curation:")
+    print("    - %d of the %d current groups have no description here (GROUPS.md would" %
+          (len(missing_desc), len(order)))
+    print("      be regenerated with bare group names, losing the curated text).")
+    print("    - RULES classify new containers into the OLD coarse names (now combos).")
+    print("    Update RULES/DESC first, then re-run with --force to override this guard.")
+    sys.exit(1)
+print("\n[!] --force given: writing despite the staleness guard.")
 
 # ---- write KRCore_Locations.lua ----
 text = loc

@@ -1,5 +1,5 @@
 -- ==========================================================================
--- KR CoreOS - Core API v1.2.1 B42.20.0 (Server)
+-- KR CoreOS - Core API v1.2.3 B42.20.0 (Server)
 -- Copyright (C) 2026 D4RK-C0MP4N1. Licensed under the MIT License (see LICENSE).
 -- ==========================================================================
 --
@@ -148,14 +148,37 @@ end
     Processed on Events.OnInitWorld (after OnPostDistributionMerge), when
     VehicleZoneDistribution is fully initialized by the engine.
 
+    The vehicle equivalent of KRCore.dist.add(): each name is resolved as a
+    semantic GROUP (KRCore.VZONE) -> COMBINED group (KRCore.VCOMBO, recursive)
+    -> a RAW VehicleZoneDistribution zone name (backward compat). Entries are
+    deduped per vehicle by the zone's vehicle table, so aliased PZ zones
+    (trafficjamn/s/e/w share one table; business2..12 too) are written once.
+
     Parameters:
       vehicleID (string) -- Full vehicle ID: "Base.FriOSStepVan"
-      zones     (table)  -- Map of zone_name -> spawnChance (integer)
-                            Standard PZ B42 zones:
-                              parkingstall, good, medium, bad,
-                              sport, junkyard, trafficjams, trafficjamn
+      zones     (table)  -- Map of name -> spawnChance (weight inside each zone;
+                            vanilla cars are ~2..30, use 1-3 for a rare modded one).
+                            'name' may be:
+                              * a group     : RESIDENTIAL, POOR, RICH, TRAFFIC,
+                                              JUNKYARD, COMMERCIAL, FARM, POLICE,
+                                              FIRE, AMBULANCE, AIRPORT, SERVICES... (KRCore.VZONE)
+                              * a combo      : CIVILIAN, WRECKS, EMERGENCY, WORK,
+                                              URBAN, ANYWHERE (KRCore.VCOMBO)
+                              * a raw PZ zone: good, trafficjams, junkyard, ... (still works)
+                            Plus an optional override list:
+                              custom = { { name = "junkyard", chance = 5, index = -1 }, ... }
+                            'chance' defaults to 1, 'index' (skin) defaults to -1 (random).
+                            Custom entries are applied FIRST (first write into a shared
+                            table wins), then the groups. Unknown names warn and skip.
 
-    Example:
+    Examples:
+        -- Semantic groups (recommended):
+        KRCore.dist.addVehicle("Base.FriOSStepVan", {
+            RESIDENTIAL = 1,
+            TRAFFIC     = 1,
+        })
+
+        -- Raw zone names still work (backward compatible):
         KRCore.dist.addVehicle("Base.FriOSStepVan", {
             good        = 1,
             trafficjams = 1,

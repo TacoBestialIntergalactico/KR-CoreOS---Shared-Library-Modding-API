@@ -12,7 +12,7 @@ tables, no container-name hunting, and no conflicts with other mods.
 - **Builds:** 42 *and* 41 (the API call is identical on both — see [Cross-build](#cross-build-b41--b42))
 - **Modes:** Singleplayer + Multiplayer (distribution runs server-side)
 - **Steam Workshop:** [`[B42-41] KR CoreOS`](https://steamcommunity.com/sharedfiles/filedetails/?id=3714654032) · Mod ID `KRCoreOS`
-- **Full group → container reference:** [GROUPS.md](GROUPS.md)
+- **Full group references:** [GROUPS.md](GROUPS.md) (items) · [GROUPS_VEHICLES.md](GROUPS_VEHICLES.md) (vehicles)
 
 ---
 
@@ -124,7 +124,9 @@ That's the whole flow. No loot tables written by hand.
 
 - **[docs/EXAMPLE_Simple.md](docs/EXAMPLE_Simple.md)** — minimal item registration, line by line.
 - **[docs/EXAMPLE_Advanced.md](docs/EXAMPLE_Advanced.md)** — probability tiers, `DEV_MODE`, `custom` overrides, vehicles, the Care Package protocol, and the runtime timeline.
-- **[GROUPS.md](GROUPS.md)** — every location group and the exact containers it maps to.
+- **[docs/EXAMPLE_Vehicles.md](docs/EXAMPLE_Vehicles.md)** — registering vehicles with zone groups.
+- **[GROUPS.md](GROUPS.md)** — every location (item) group and the exact containers it maps to.
+- **[GROUPS_VEHICLES.md](GROUPS_VEHICLES.md)** — every vehicle zone group and the zones it maps to.
 - **[CHANGELOG.md](CHANGELOG.md)** — version history.
 
 ---
@@ -143,12 +145,16 @@ Register an item into the world loot tables.
 a 30% chance per container in that group.
 
 ### `KRCore.dist.addVehicle(vehicleID, zones)`
-Register a vehicle into `VehicleZoneDistribution`.
-- `zones` *(table)* — map of `zoneName = spawnChance` *(integer)*. Standard B42 zones:
-  `parkingstall, good, medium, bad, sport, junkyard, trafficjams, trafficjamn`.
+Register a vehicle into `VehicleZoneDistribution` — the vehicle counterpart of `dist.add`.
+- `zones` *(table)* — map of `NAME = spawnChance`. A name can be a **zone group**
+  (`KRCore.VZONE`: `RESIDENTIAL`, `TRAFFIC`, `COMMERCIAL`, `POLICE`, `FARM`, …), a **combo**
+  (`KRCore.VCOMBO`: `CIVILIAN`, `WRECKS`, `EMERGENCY`, `WORK`, `URBAN`, `ANYWHERE`), or a raw
+  PZ zone (`good`, `trafficjams`, … — still works). Plus `custom = { {name, chance, index}, … }`.
+  `spawnChance` is a weight inside the zone (~2–30 for vanilla cars; use **1–3** for a rare
+  modded vehicle). Full list in [GROUPS_VEHICLES.md](GROUPS_VEHICLES.md).
 
 ```lua
-KRCore.dist.addVehicle("Base.MyVan", { good = 1, trafficjams = 1 })
+KRCore.dist.addVehicle("Base.MyVan", { RESIDENTIAL = 1, TRAFFIC = 1 })
 ```
 
 ### `custom` targeting and overrides
@@ -180,11 +186,14 @@ For "add-on" mods that inject content into a host mod without touching its files
      the same container (e.g. `GarageMechanics` lives in both `INDUSTRIAL` and `MECHANIC`);
    - container names not present in the running build are skipped silently.
 3. Vehicles are processed later, on **`OnInitWorld`** (the first point where
-   `VehicleZoneDistribution` is fully initialized).
+   `VehicleZoneDistribution` is fully initialized). Zone names resolve the same way as items
+   — group (`KRCore.VZONE`) → combo (`KRCore.VCOMBO`, recursive) → raw zone — and dedupe **by
+   the zone's vehicle table**, so PZ's aliased zones (the four `trafficjam*` directions share
+   one table; `business2..12` too) are written once.
 
 Load order is guaranteed by the `server/` folder + alphabetical file names:
-`KRCore_API` → `KRCore_Locations` → `KRCore_Server`, all before dependent mods (thanks to
-`require=KRCoreOS`).
+`KRCore_API` → `KRCore_Locations` → `KRCore_LocationsVehicles` → `KRCore_Server`, all before
+dependent mods (thanks to `require=KRCoreOS`).
 
 ### Cross-build (B41 / B42)
 You write **the same `KRCore.dist.add` call** for both builds. CoreOS ships a
@@ -222,6 +231,26 @@ Thematic groups are fine and curated into families, for example:
   `HYGIENE`, `KITCHEN`, `SPORTS`, `MEDIA`, `FURNITURE`, `FRIDGE`, `FREEZER`, `CRATES`, `SPECIAL`.
 - **Concepts:** `WAREHOUSE` · `POWER` · `COLD_STORAGE` · `COOKING` · `FOOD` · `MILITARY` ·
   `TACTICAL` · `WARZONE` · `LAW` · `WORKSHOP`.
+
+---
+
+## Vehicle zone groups at a glance
+
+Vehicles get the same treatment as items: register with a **context group** instead of raw
+`VehicleZoneDistribution` names. **18 zone groups + 6 combos**; full mapping in
+**[GROUPS_VEHICLES.md](GROUPS_VEHICLES.md)**, how-to in
+**[docs/EXAMPLE_Vehicles.md](docs/EXAMPLE_Vehicles.md)**.
+
+- **Groups (`KRCore.VZONE`):** `RESIDENTIAL` · `PARKING` · `POOR` · `RICH` · `DEALERSHIP` ·
+  `TRAFFIC` · `JUNKYARD` · `COMMERCIAL` · `FARM` · `AIRPORT` · `POLICE` · `PRISON` · `FIRE` ·
+  `AMBULANCE` · `RANGER` · `SERVICES` · `ADVERTISING` · `STORY`.
+- **Combos (`KRCore.VCOMBO`):** `CIVILIAN` · `WRECKS` · `EMERGENCY` · `WORK` · `URBAN` · `ANYWHERE`.
+
+```lua
+KRCore.dist.addVehicle("Base.MyVan", { RESIDENTIAL = 1, TRAFFIC = 1 })  -- TRAFFIC = all 4 jam directions
+```
+
+Raw zone names still work, so older `addVehicle` calls need no changes.
 
 ---
 

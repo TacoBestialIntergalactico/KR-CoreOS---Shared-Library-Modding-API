@@ -3,6 +3,56 @@
 All notable changes to **KR CoreOS** are documented here.
 This project targets Project Zomboid **Build 41** and **Build 42**.
 
+## [1.2.3] — Vehicle zone groups
+
+Brings the vehicle side up to par with items: **semantic groups, combos, `custom`
+overrides, dedupe and validation** — instead of raw `VehicleZoneDistribution` names.
+
+### Added
+- **`KRCore.VZONE` — vehicle zone groups** (the vehicle equivalent of `KRCore.LOC`):
+  friendly names that expand to real zones — `RESIDENTIAL`, `PARKING`, `POOR`, `RICH`,
+  `DEALERSHIP`, `TRAFFIC`, `JUNKYARD`, `COMMERCIAL`, `FARM`, `AIRPORT`, `POLICE`, `PRISON`,
+  `FIRE`, `AMBULANCE`, `RANGER`, `SERVICES`, `ADVERTISING`, `STORY`.
+- **`KRCore.VCOMBO` — vehicle combos** (recursive union, deduped): `CIVILIAN`, `WRECKS`,
+  `EMERGENCY`, `WORK`, `URBAN`, `ANYWHERE`.
+- **`custom` for vehicles** — `custom = { { name = "junkyard", chance = 5, index = -1 }, ... }`,
+  applied before groups (first write wins), mirroring the item `custom` key.
+- New taxonomy file `42/media/lua/server/KRCore_LocationsVehicles.lua`, plus
+  **[GROUPS_VEHICLES.md](GROUPS_VEHICLES.md)** (every group → zones) and
+  **[docs/EXAMPLE_Vehicles.md](docs/EXAMPLE_Vehicles.md)** (how-to guide).
+
+### Changed
+- **`KRCore.dist.addVehicle` now resolves names** as group → combo → raw zone (recursive,
+  cycle-guarded). Raw zone names still work unchanged, so existing calls need no edits.
+- **Dedupe by vehicle table, not by name.** Several PZ zones alias one table
+  (`trafficjamn/s/e/w` share it; `business2..business12` too), so a vehicle is written once
+  even when a group touches several aliases — no redundant entries. As a result a group like
+  `TRAFFIC` correctly covers *all four* jam directions with a single write.
+
+### Notes (PZ internals surfaced by this work)
+- The four traffic-jam zones share one vehicle table → registering in one covers all directions.
+- The 3Network van zone is `network3` (not `network`).
+- `trades / delivery / professional / middleClass / struggling / evacuee / racecar` are used
+  only by randomized vehicle *stories*, not regular map spawning (grouped as `STORY`).
+
+> **Backward compatibility:** existing `addVehicle` calls with raw zone names are unchanged.
+>
+> **B41:** the vehicle group taxonomy targets B42 zones; B41 keeps the raw-name API (still works).
+
+## [1.2.2] — Vehicle distribution API
+
+### Added
+- **`KRCore.dist.addVehicle(vehicleID, zones)`** — documented. Registers a vehicle in
+  `VehicleZoneDistribution` so it spawns in the world; `zones` maps a zone name to its
+  `spawnChance`. Processed on `OnInitWorld`. Dependent mods no longer touch
+  `VehicleZoneDistribution` directly — e.g. KR FriOS Simplified (B41) now delegates its
+  KRFStepVan spawn to this API instead of its own file.
+
+### Fixed
+- Corrected the vehicle-zone names in the API docs: removed the non-existent `farm`
+  zone and added `parkingstall` / `trailerpark`. Any zone present in
+  `VehicleZoneDistribution` works; unknown ones are skipped with a warning.
+
 ## [1.2.1] — Fine-grained taxonomy & combo overhaul
 
 ### Added

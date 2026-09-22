@@ -135,9 +135,12 @@ end
     Parameters:
       vehicleID (string) -- Full vehicle ID: "Base.FriOSStepVan"
       zones     (table)  -- Map of zone_name -> spawnChance (integer)
-                            Standard PZ B41 zones:
-                              good, medium, bad, sport, junkyard,
-                              trafficjams, trafficjamn, farm, ranger
+                            Common PZ zones: parkingstall, trailerpark, bad,
+                              medium, good, sport, junkyard, ranger,
+                              trafficjams/n/e/w (special zones exist too:
+                              police, fire, ambulance, spiffo, postal...).
+                            Any zone present in VehicleZoneDistribution works;
+                            unknown ones are skipped with a warning.
 
     Example:
         KRCore.dist.addVehicle("Base.FriOSStepVan", {
